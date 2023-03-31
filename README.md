@@ -1,1 +1,220 @@
 # test_hmw5
+
+
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.action_chains import ActionChains
+from pathlib import Path
+from datetime import date
+import pytest
+
+class Test_Sauce():
+
+    def setup_method(self):
+        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        self.driver.maximize_window()
+        self.driver.get("https://www.saucedemo.com/")
+        self.folderPath = str(date.today())
+        Path(self.folderPath).mkdir(exist_ok = True)
+
+    def teardown_method(self):
+        self.driver.quit()
+
+    def wait_for_element_visible(self,locator):
+        WebDriverWait(self.driver,5).until(ec.visibility_of_element_located(locator))
+
+# Boş giriş
+    @pytest.mark.parametrize("username,password",[("", "")])
+    def test_empty_login(self,username,password):
+        self.wait_for_element_visible((By.ID, "user-name"))
+        usernameInput = self.driver.find_element(By.ID, "user-name")
+        
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID, "password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput,username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+
+        loginBtn = self.driver.find_element(By.ID, "login-button")
+        loginBtn.click()
+
+        errorMessage = self.driver.find_element(By.XPATH, "//*[@id='login_button_container']/div/form/div[3]/h3")
+        self.driver.save_screenshot(f"{self.folderPath}/test-empty-login-{username}-{password}.png")
+        assert errorMessage.text == 'Epic sadface: Username is required'      
+
+   
+
+#doğru giriş
+    @pytest.mark.parametrize("username,password",[("locked_user","secret_sauce"),("problem_user","secret_sauce"),("performance_glitch_user","secret_user")])
+    def test_get_login(self,username,password):
+        self.wait_for_element_visible((By.ID,"user-name"))
+        usernameInput = self.driver.find_element(By.ID,"user-name")
+
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID,"password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput,username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+
+        loginBtn = self.driver.find_element(By.ID, "login-button")
+        loginBtn.click()      
+        self.driver.save_screenshot(f"{self.folderPath}/test-get-login-{username}-{password}.png") 
+
+    
+    #hatalı giriş
+    @pytest.mark.parametrize("username,password",[("1","1"),("Esra","345")])
+    def test_invalid_login(self,username,password):
+        self.wait_for_element_visible((By.ID,"user-name"))
+        usernameInput = self.driver.find_element(By.ID,"user-name")
+
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID,"password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput, username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+
+        loginBtn = self.driver.find_element(By.ID, "login-button")
+        loginBtn.click()
+
+        errorMesage = self.driver.find_element(By.XPATH, "//*[@id='login_button_container']/div/form/div[3]/h3")
+        self.driver.save_screenshot(f"{self.folderPath}/test-invalid-login-{username}-{password}.png") 
+        assert errorMesage.text == 'Epic sadface: Username and password do not match any user in this service'
+   
+
+#locked_out_user
+    @pytest.mark.parametrize("username,password",[("locked_out_user","secret_sauce")])
+    def test_lockedout(self,username,password): 
+        self.waitForElementVisible((By.ID,"user-name"))       
+        usernameInput=self.driver.find_element(By.ID,"user-name")
+        self.waitForElementVisible((By.ID,"password"))  
+        passwordInput=self.driver.find_element(By.ID,"password")
+        usernameInput.send_keys(username)
+        passwordInput.send_keys(password)                                      
+        loginBtn=self.driver.find_element(By.ID,"login-button")
+        loginBtn.click()
+        errorMessage=self.driver.find_element(By.XPATH,"/html/body/div/div/div[2]/div[1]/div/div/form/div[3]/h3")
+        self.driver.save_screenshot(f"{self.folderPath}/test_user_locked.png")
+        assert errorMessage.text=="Epic sadface: Sorry, this user has been locked out."
+       
+
+# İkona tıklama
+    @pytest.mark.parametrize("username,password",[("1","1")])
+    def test_icon(self,username,password):
+        self.wait_for_element_visible((By.ID,"user-name"))
+        usernameInput = self.driver.find_element(By.ID,"user-name")
+
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID,"password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput,username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+
+        loginBtn = self.driver.find_element(By.ID,"login-button")
+        loginBtn.click()
+
+        self.driver.save_screenshot(f"{self.folderPath}/test-icon-{username}-{password}.png")
+
+        xBtn = self.driver.find_element(By.XPATH,"//*[@id='login_button_container']/div/form/div[3]/h3/button")
+        xBtn.click()
+
+
+ #Ürün sayısı
+    @pytest.mark.parametrize("username,password", [("standard_user", "secret_sauce")])
+    def test_item_number(self, username, password):
+        self.wait_for_element_visible((By.ID, "user-name"))
+        userNameInput = self.driver.find_element(By.ID, "user-name")
+       
+        self.wait_for_element_visible((By.ID, "password"))
+        passwordInput = self.driver.find_element(By.ID, "password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(userNameInput, username)
+        action.send_keys_to_element(passwordInput, password)
+        action.perform()
+       
+        logIn = self.driver.find_element(By.ID, "login-button")
+        logIn.click()
+       
+        itemNumber = self.driver.find_elements(By.CLASS_NAME, "inventory_item")
+        self.driver.save_screenshot(f"{self.folderPath}/test-item-number-{username}-{password}.png")
+        assert len(itemNumber) == 6
+
+
+    # Ürün listesi
+    @pytest.mark.parametrize("username,password",[("problem_user","secret_sauce")])
+    def test_products(self,username,password):
+        self.wait_for_element_visible((By.ID,"user-name"))
+        usernameInput = self.driver.find_element(By.ID,"user-name")
+
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID,"password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput,username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+        
+        loginBtn = self.driver.find_element(By.ID,"login-button")
+        loginBtn.click()
+
+        self.driver.get("https://www.saucedemo.com/inventory.html")
+        self.driver.save_screenshot(f"{self.folderPath}/test-product-list-{username}-{password}.png")
+   
+  
+
+#log out
+    @pytest.mark.parametrize("username,password",[("performance_glitch_user","secret_sauce")])
+    def test_log_out(self,username,password):
+        self.wait_for_element_visible((By.ID,"user-name"))
+        usernameInput = self.driver.find_element(By.ID,"user-name")
+
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID,"password")
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput,username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+        loginBtn = self.driver.find_element(By.ID, "login-button")
+        loginBtn.click()
+        menu = self.driver.find_element(By.ID,"react-burger-menu-btn")
+        menu.click()
+        log_outBtn = self.driver.find_element(By.XPATH,"//*[@id='logout_sidebar_link']")
+        self.driver.save_screenshot(f"{self.folderPath}/test-log-out-{username}-{password}.png")
+        log_outBtn.click()
+
+
+#about butonu
+    @pytest.mark.parametrize("username,password",[("standard_user","secret_sauce")])
+    def test_about(self,username,password):
+        self.wait_for_element_visible((By.ID,"user-name"))
+        usernameInput = self.driver.find_element(By.ID,"user-name")
+ 
+        self.wait_for_element_visible((By.ID,"password"))
+        passwordInput = self.driver.find_element(By.ID,"password")
+
+        action = ActionChains(self.driver)
+        action.send_keys_to_element(usernameInput,username)
+        action.send_keys_to_element(passwordInput,password)
+        action.perform()
+
+        loginBtn =self.driver.find_element(By.ID,"login-button")
+        loginBtn.click()
+
+        menuBtn= self.driver.find_element(By.ID,"react-burger-menu-btn")
+        menuBtn.click()
+
+        aboutBtn=self.driver.find_element(By.ID,"//*[@id='about_sidebar_link']")
+        aboutBtn.click()
+        self.driver.save_screenshot(f"{self.folderPath}/test-log-out-{username}-{password}.png")
+
