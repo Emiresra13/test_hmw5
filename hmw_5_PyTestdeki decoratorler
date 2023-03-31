@@ -1,0 +1,7 @@
+@pytest.mark.skip=testleri herhangi bir koşula bağlı olmadan atlamamızı sağlar
+@pytest.mark.skipif: Eğer koşulumuz 'True' ise test fonksiyonunu atlamamızı sağlar
+@pytest.mark.parametrize bağımsız değişkenlerin parametreleştirilmesini sağlar.
+@pytest.fixture  Yapacağımız test için uygun ortamı oluşturur
+@pytest.mark.xfail= failed olacağını bildiğimiz testleri belirtmek için kullanıyoruz ki hatalarımızı izleyip,düzeltebilelim
+@pytest.mark.timeout: Bir testin belirli bir sürede tamamlanması gerektiğini belirtmek için kullanılır
+@pytest.exit: Test sürecinden çıkmamızı sağlar.
